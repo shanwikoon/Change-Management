@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Restaurant Revamp: Match the Change - Results</title>
+  <style>
+    /* Result page styles */
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 50px auto; padding: 20px; }
+    button { padding: 10px 20px; font-size: 1em; cursor: pointer; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Game Over</h1>
+    <p id="finalScore"></p>
+    <button onclick="restartGame()">Play Again</button>
+  </div>
+  <script>
+    // Retrieve the final score from sessionStorage and display it
+    const finalScore = sessionStorage.getItem('finalScore') || 0;
+    document.getElementById('finalScore').innerText = "Your final score is: " + finalScore;
+
+    // Function to restart the game by clearing storage and redirecting to the landing page
+    function restartGame() {
+      sessionStorage.clear();
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

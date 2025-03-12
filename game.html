@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Restaurant Revamp: Match the Change - Game</title>
+  <style>
+    /* Game page styles */
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+    header { background: #f4f4f4; padding: 10px; text-align: center; }
+    #score { font-size: 1.2em; margin-top: 5px; }
+    .container { display: flex; width: 100%; height: calc(100vh - 80px); }
+    #cardPool, #dropZones { padding: 20px; overflow-y: auto; }
+    #cardPool { width: 40%; border-right: 1px solid #ccc; }
+    #dropZones { width: 60%; display: flex; flex-wrap: wrap; justify-content: space-around; align-content: flex-start; }
+    .card { padding: 10px; margin: 10px; background: #e0e0e0; border: 1px solid #ccc; cursor: move; }
+    .dropzone { width: 45%; min-height: 120px; margin: 10px; padding: 10px; background: #f9f9f9; border: 2px dashed #ccc; }
+    .dropzone h3 { margin-top: 0; font-size: 1em; }
+    .correct { background: #b2d8b2 !important; }
+    .incorrect { background: #f4a1a1 !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Restaurant Revamp: Match the Change</h1>
+    <p id="instructions">
+      Drag and drop each scenario card into the appropriate category. Correct placements earn 10 points; incorrect placements deduct 5 points.
+    </p>
+    <div id="score">Score: 0</div>
+  </header>
+  <div class="container">
+    <!-- Left Panel: Draggable Cards -->
+    <div id="cardPool"></div>
+    <!-- Right Panel: Drop Zones -->
+    <div id="dropZones">
+      <div class="dropzone" id="dropzone-1" data-topic="1">
+        <h3>Strategic Approaches to Change</h3>
+      </div>
+      <div class="dropzone" id="dropzone-2" data-topic="2">
+        <h3>Transition State in Change</h3>
+      </div>
+      <div class="dropzone" id="dropzone-3" data-topic="3">
+        <h3>Choosing Organizational Structures</h3>
+      </div>
+      <div class="dropzone" id="dropzone-4" data-topic="4">
+        <h3>Diversity in Change Management</h3>
+      </div>
+      <div class="dropzone" id="dropzone-5" data-topic="5">
+        <h3>Motivation and Resistance</h3>
+      </div>
+      <div class="dropzone" id="dropzone-6" data-topic="6">
+        <h3>Managing Talent</h3>
+      </div>
+      <div class="dropzone" id="dropzone-7" data-topic="7">
+        <h3>Learning for Change (Online Learning)</h3>
+      </div>
+      <div class="dropzone" id="dropzone-8" data-topic="8">
+        <h3>HR and Change</h3>
+      </div>
+      <div class="dropzone" id="dropzone-9" data-topic="9">
+        <h3>Leadership in Change</h3>
+      </div>
+      <div class="dropzone" id="dropzone-10" data-topic="10">
+        <h3>Teams and Team Dynamics</h3>
+      </div>
+      <div class="dropzone" id="dropzone-11" data-topic="11">
+        <h3>Employee Health and Wellbeing</h3>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Data for the scenario cards (each object represents one card)
+    const cardsData = [
+      {
+        id: 'card-1',
+        text: "The restaurant owner decides to reposition the brand by revamping the menu and interior décor to attract a new market segment.",
+        topic: "1" // Strategic Approaches to Change
+      },
+      {
+        id: 'card-2',
+        text: "The restaurant is shifting from an exclusively dine-in model to incorporating take-away and delivery services, requiring staff retraining.",
+        topic: "2" // Transition State in Change
+      },
+      {
+        id: 'card-3',
+        text: "To improve efficiency, the restaurant transitions from a family-run setup to a formal structure with defined roles such as head chef and floor manager.",
+        topic: "3" // Choosing Organizational Structures
+      },
+      {
+        id: 'card-4',
+        text: "A multicultural menu is introduced and staff from diverse backgrounds are hired, necessitating adjustments in management style.",
+        topic: "4" // Diversity in Change Management
+      },
+      {
+        id: 'card-5',
+        text: "When implementing a new digital ordering system, some experienced staff resist the change while others embrace it.",
+        topic: "5" // Motivation and Resistance
+      },
+      {
+        id: 'card-6',
+        text: "High-potential employees are identified and given specialised training programmes to enhance culinary and service skills.",
+        topic: "6" // Managing Talent
+      },
+      {
+        id: 'card-7',
+        text: "Staff enrol in an online course to update their knowledge on food safety and modern service techniques.",
+        topic: "7" // Learning for Change (Online Learning)
+      },
+      {
+        id: 'card-8',
+        text: "The HR department overhauls policies to better align with the restaurant’s new strategic direction.",
+        topic: "8" // HR and Change
+      },
+      {
+        id: 'card-9',
+        text: "The head chef and owner lead a major menu overhaul, demonstrating transparent communication and inspiring their team.",
+        topic: "9" // Leadership in Change
+      },
+      {
+        id: 'card-10',
+        text: "Cross-functional teams are formed to brainstorm innovative dishes and streamline service operations.",
+        topic: "10" // Teams and Team Dynamics
+      },
+      {
+        id: 'card-11',
+        text: "To support staff wellbeing during peak hours, wellness initiatives such as flexible scheduling and mindfulness sessions are introduced.",
+        topic: "11" // Employee Health and Wellbeing
+      }
+    ];
+
+    let score = 0;
+    let correctCount = 0;
+    const totalCards = cardsData.length;
+
+    // Update the score display
+    function updateScore() {
+      document.getElementById('score').innerText = 'Score: ' + score;
+    }
+
+    // Shuffle function to randomise the order of cards
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Render the draggable cards in the card pool
+    function renderCards() {
+      const cardPool = document.getElementById('cardPool');
+      cardPool.innerHTML = '';
+      const shuffledCards = shuffle([...cardsData]);
+      shuffledCards.forEach(card => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card';
+        cardDiv.id = card.id;
+        cardDiv.draggable = true;
+        cardDiv.innerText = card.text;
+        // Set a data attribute for the correct topic
+        cardDiv.setAttribute('data-topic', card.topic);
+        cardDiv.addEventListener('dragstart', dragStart);
+        cardPool.appendChild(cardDiv);
+      });
+    }
+
+    // Drag start handler
+    function dragStart(e) {
+      e.dataTransfer.setData('text/plain', e.target.id);
+    }
+
+    // Drag over handler for drop zones (allow drop)
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    // Drop handler for drop zones
+    function drop(e) {
+      e.preventDefault();
+      const cardId = e.dataTransfer.getData('text/plain');
+      const card = document.getElementById(cardId);
+      const dropZone = e.currentTarget;
+      const expectedTopic = dropZone.getAttribute('data-topic');
+      const cardTopic = card.getAttribute('data-topic');
+
+      if (expectedTopic === cardTopic) {
+        // Correct placement: append the card, change colour, update score, disable further dragging
+        dropZone.appendChild(card);
+        card.classList.add('correct');
+        card.draggable = false;
+        score += 10;
+        correctCount++;
+      } else {
+        // Incorrect placement: flash red and deduct score
+        card.classList.add('incorrect');
+        score -= 5;
+        setTimeout(() => { card.classList.remove('incorrect'); }, 500);
+      }
+      updateScore();
+
+      // Check if all cards have been correctly placed
+      if (correctCount === totalCards) {
+        // Save final score and navigate to the result page
+        sessionStorage.setItem('finalScore', score);
+        setTimeout(() => {
+          window.location.href = 'result.html';
+        }, 1000);
+      }
+    }
+
+    // Attach event listeners to all drop zones
+    function setupDropZones() {
+      const dropZones = document.getElementsByClassName('dropzone');
+      for (let zone of dropZones) {
+        zone.addEventListener('dragover', dragOver);
+        zone.addEventListener('drop', drop);
+      }
+    }
+
+    // Initialise the game when the page loads
+    window.onload = function() {
+      updateScore();
+      renderCards();
+      setupDropZones();
+    };
+  </script>
+</body>
+</html>
